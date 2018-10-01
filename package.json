@@ -1,0 +1,23 @@
+{
+  "name": "private_blockchain",
+  "version": "1.0.0",
+  "description": "Private Blockchain from Udacity Course",
+  "main": "levelSandbox.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aarodrigues/private_blockchain.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aarodrigues/private_blockchain/issues"
+  },
+  "homepage": "https://github.com/aarodrigues/private_blockchain#readme",
+  "dependencies": {
+    "crypto-js": "^3.1.9-1",
+    "level": "^4.0.0"
+  }
+}

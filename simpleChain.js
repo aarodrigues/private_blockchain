@@ -4,10 +4,14 @@
 
 const SHA256 = require('crypto-js/sha256');
 
-
+let levelSandbox = require('./levelSandbox');
 /* ===== Block Class ==============================
 |  Class with a constructor for block 			   |
 |  ===============================================*/
+
+function haha(){
+  levelSandbox.printTest();
+}
 
 class Block{
 	constructor(data){
@@ -17,6 +21,14 @@ class Block{
      this.time = 0,
      this.previousBlockHash = ""
     }
+}
+
+function save(data){
+  levelSandbox.addLevelDBData(0,data)
+}
+
+function get(id){
+  levelSandbox.getLevelDBData(id);
 }
 
 /* ===== Blockchain Class ==========================
@@ -42,7 +54,8 @@ class Blockchain{
     // Block hash with SHA256 using newBlock and converting to a string
     newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
     // Adding block object to chain
-  	this.chain.push(newBlock);
+    //this.chain.push(newBlock);
+    levelSandbox.addDataToLevelDB(newBlock);
   }
 
   // Get block height

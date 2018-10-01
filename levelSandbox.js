@@ -2,9 +2,15 @@
 |  Learn more: level: https://github.com/Level/level     |
 |  =============================================================*/
 
+module.exports = {printTest, addLevelDBData, getLevelDBData, addDataToLevelDB}
+
 const level = require('level');
 const chainDB = './chaindata';
 const db = level(chainDB);
+
+function printTest(){
+  console.log("Ve se funciona!");
+}
 
 // Add data to levelDB with key/value pair
 function addLevelDBData(key,value){
@@ -46,9 +52,9 @@ function addDataToLevelDB(value) {
 |  ===========================================================================*/
 
 
-(function theLoop (i) {
-  setTimeout(function () {
-    addDataToLevelDB('Testing data');
-    if (--i) theLoop(i);
-  }, 100);
-})(10);
+// (function theLoop (i) {
+//   setTimeout(function () {
+//     addDataToLevelDB('Testing data');
+//     if (--i) theLoop(i);
+//   }, 100);
+// })(10);
