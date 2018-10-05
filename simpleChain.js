@@ -26,14 +26,18 @@ class Block{
 
 class Blockchain{
   constructor(){
-    this.chain = levelSandbox.getAllData()
-    .then(()=>{
+    this.chain = [];
+     levelSandbox.getAllData()
+    .then((list)=>{
         console.log("list size: " +this.chain.length );
-      if(this.chain.length == 0){
-        console.log("Entered here oxe!!! ");
-        this.addBlock(new Block("First block in the chain - Genesis block"));
-      }
+        if(list.length == 0){
+          console.log("Entered here oxe!!! ");
+          this.addBlock(new Block("First block in the chain - Genesis block"));
+        }else{
+          this.chain = list;
+        }
     });
+   
     
   }
 

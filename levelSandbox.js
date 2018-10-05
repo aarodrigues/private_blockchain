@@ -44,14 +44,19 @@ function addDataToLevelDB(value) {
 list = [];
 // get all data
 function getAllData() {
-  db.createReadStream().on('data', function(data) {
+ 
+  
+  let promisse =  new Promise((resolve, reject) => {
+      db.createReadStream().on('data', function(data) {
         list.push(JSON.parse(data.value));
       }).on('error', function(err) {
           return console.log('Unable to read data stream!', err)
       }).on('close', function() {
         console.log('List: ' + list);
+        resolve(list);
       });
-  return list;
+    });
+  return promisse;
 }
 
 /* ===== Testing ==============================================================|
