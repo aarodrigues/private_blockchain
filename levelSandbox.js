@@ -2,7 +2,7 @@
 |  Learn more: level: https://github.com/Level/level     |
 |  =============================================================*/
 
-module.exports = {printTest, addLevelDBData, getLevelDBData, addDataToLevelDB}
+module.exports = {printTest, addLevelDBData, getLevelDBData, addDataToLevelDB, getAllData}
 
 const level = require('level');
 const chainDB = './chaindata';
@@ -23,8 +23,9 @@ function addLevelDBData(key,value){
 function getLevelDBData(key){
   db.get(key, function(err, value) {
     if (err) return console.log('Not found!', err);
-    console.log('Value = ' + value);
-  })
+    console.log('Value = ' + typeof value);
+  });
+  return JSON.parse(value);
 }
 
 // Add data to levelDB with value
@@ -38,6 +39,19 @@ function addDataToLevelDB(value) {
           console.log('Block #' + i);
           addLevelDBData(i, value);
         });
+}
+
+list = [];
+// get all data
+function getAllData() {
+  db.createReadStream().on('data', function(data) {
+        list.push(JSON.parse(data.value));
+      }).on('error', function(err) {
+          return console.log('Unable to read data stream!', err)
+      }).on('close', function() {
+        console.log('List: ' + list);
+      });
+  return list;
 }
 
 /* ===== Testing ==============================================================|
