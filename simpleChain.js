@@ -3,7 +3,6 @@
 |  =========================================================*/
 
 const SHA256 = require('crypto-js/sha256');
-
 let levelSandbox = require('./levelSandbox');
 
 /* ===== Block Class ==============================
@@ -29,16 +28,15 @@ class Blockchain{
     this.chain = [];
      levelSandbox.getAllData()
     .then((list)=>{
-        console.log("list size: " +this.chain.length );
+        console.log("list size: " +list.length );
         if(list.length == 0){
-          console.log("Entered here oxe!!! ");
+          console.log("First Block created.");
           this.addBlock(new Block("First block in the chain - Genesis block"));
         }else{
+          console.log("Blockchain loaded.");
           this.chain = list;
         }
     });
-   
-    
   }
 
   // Add new block

@@ -23,9 +23,8 @@ function addLevelDBData(key,value){
 function getLevelDBData(key){
   db.get(key, function(err, value) {
     if (err) return console.log('Not found!', err);
-    console.log('Value = ' + typeof value);
-  });
-  return JSON.parse(value);
+    console.log('Value = ' + value);
+  })
 }
 
 // Add data to levelDB with value
@@ -41,11 +40,9 @@ function addDataToLevelDB(value) {
         });
 }
 
-list = [];
 // get all data
 function getAllData() {
- 
-  
+  list = [];
   let promisse =  new Promise((resolve, reject) => {
       db.createReadStream().on('data', function(data) {
         list.push(JSON.parse(data.value));
