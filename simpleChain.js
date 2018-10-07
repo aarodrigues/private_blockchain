@@ -3,7 +3,6 @@
 |  =========================================================*/
 
 const SHA256 = require('crypto-js/sha256');
-
 let levelSandbox = require('./levelSandbox');
 
 /* ===== Block Class ==============================
@@ -26,49 +25,71 @@ class Block{
 
 class Blockchain{
   constructor(){
-    this.chain = [];
-     levelSandbox.getAllData()
-    .then((list)=>{
-        console.log("list size: " +this.chain.length );
-        if(list.length == 0){
-          console.log("Entered here oxe!!! ");
-          this.addBlock(new Block("First block in the chain - Genesis block"));
-        }else{
-          this.chain = list;
-        }
+    this.chain = levelSandbox.getLevelDBData,
+    this.hasPrevious = false;
+    this.chain(0)
+    .then((value)=>{
+      console.log('Value = ' + value);
+      this.hasPrevious = true;
+    })
+    .catch((err)=>{
+      console.log("First Block created.");
+      this.addBlock(new Block("First block in the chain - Genesis block"));
+      this.hasPrevious = true;
     });
-   
-    
   }
 
   // Add new block
   addBlock(newBlock){
-    // Block height
-    newBlock.height = this.chain.length;
     // UTC timestamp
     newBlock.time = new Date().getTime().toString().slice(0,-3);
-    // previous block hash
-    if(this.chain.length>0){
-      newBlock.previousBlockHash = this.chain[this.chain.length-1].hash;
-    }
-    // Block hash with SHA256 using newBlock and converting to a string
-    newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
-    // Save in leveldb
-    levelSandbox.addDataToLevelDB(JSON.stringify(newBlock));
-    // Adding block object to chain
-    this.chain.push(newBlock);
-    
+    //get last Register from db
+    levelSandbox.lastRegister()
+      .on('data', function(data) {
+        // Block height
+        newBlock.height =  JSON.parse(data.value).height+1;
+      }).on('error', function(err) {
+          return console.log('Unable to read data stream!', err);
+      }).on('close', function() {
+          
+          if(newBlock.height>0){  
+            //async fucntion to get previous block  
+            levelSandbox.getLevelDBData(newBlock.height-1).then((value)=>{
+              // previous block hash
+              newBlock.previousBlockHash = JSON.parse(value).hash;
+              // Block hash with SHA256 using newBlock and converting to a string
+              newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
+              // Save in leveldb
+              levelSandbox.addDataToLevelDB(JSON.stringify(newBlock));
+            });     
+          }else{
+            // Block hash with SHA256 using newBlock and converting to a string
+            newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
+            // Save in leveldb
+            levelSandbox.addDataToLevelDB(JSON.stringify(newBlock));
+          }
+      });
   }
 
   // Get block height
     getBlockHeight(){
-      return this.chain.length-1;
+      levelSandbox.lastRegister()
+      .on('data', function(data) {
+          console.log('Height: ' + JSON.parse(data.value).height);
+      }).on('error', function(err) {
+          return console.log('Unable to read data stream!', err);
+      });
     }
 
     // get block
     getBlock(blockHeight){
-      // return object as a single string
-      return JSON.parse(JSON.stringify(this.chain[blockHeight]));
+      this.chain(blockHeight)
+      .then((value)=>{
+        console.log(JSON.parse(value));
+      })
+      .catch((err)=>{
+        if (err) return console.log('Not found!', err);
+      });
     }
 
     // validate block

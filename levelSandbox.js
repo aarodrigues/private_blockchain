@@ -2,7 +2,7 @@
 |  Learn more: level: https://github.com/Level/level     |
 |  =============================================================*/
 
-module.exports = {printTest, addLevelDBData, getLevelDBData, addDataToLevelDB, getAllData}
+module.exports = {printTest, addLevelDBData, getLevelDBData, addDataToLevelDB, getAllData, lastRegister}
 
 const level = require('level');
 const chainDB = './chaindata';
@@ -21,11 +21,7 @@ function addLevelDBData(key,value){
 
 // Get data from levelDB with key
 function getLevelDBData(key){
-  db.get(key, function(err, value) {
-    if (err) return console.log('Not found!', err);
-    console.log('Value = ' + typeof value);
-  });
-  return JSON.parse(value);
+  return db.get(key);
 }
 
 // Add data to levelDB with value
@@ -41,11 +37,10 @@ function addDataToLevelDB(value) {
         });
 }
 
-list = [];
+
 // get all data
 function getAllData() {
- 
-  
+  list = [];
   let promisse =  new Promise((resolve, reject) => {
       db.createReadStream().on('data', function(data) {
         list.push(JSON.parse(data.value));
@@ -57,6 +52,22 @@ function getAllData() {
       });
     });
   return promisse;
+}
+
+function lastRegister(){
+  let count = 0;
+  return db.createReadStream({
+    reverse: true,
+    limit: 1
+  });
+  // .on('data', function(data) {
+      
+  //     let block = JSON.parse(data.value);
+  //     count = block.height;
+  //     console.log('Height: ' + count);
+  //   }).on('error', function(err) {
+  //       return console.log('Unable to read data stream!', err)
+  //   });
 }
 
 /* ===== Testing ==============================================================|
