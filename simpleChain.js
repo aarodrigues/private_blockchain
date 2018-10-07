@@ -26,16 +26,13 @@ class Block{
 class Blockchain{
   constructor(){
     this.chain = levelSandbox.getLevelDBData,
-    this.hasPrevious = false;
     this.chain(0)
     .then((value)=>{
-      console.log('Value = ' + value);
-      this.hasPrevious = true;
+      console.log('Blockchain loaded.');
     })
     .catch((err)=>{
       console.log("First Block created.");
       this.addBlock(new Block("First block in the chain - Genesis block"));
-      this.hasPrevious = true;
     });
   }
 
