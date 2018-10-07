@@ -91,21 +91,26 @@ class Blockchain{
 
     // validate block
     validateBlock(blockHeight){
-      // get block object
-      let block = this.getBlock(blockHeight);
-      // get block hash
-      let blockHash = block.hash;
-      // remove block hash to test block integrity
-      block.hash = '';
-      // generate block hash
-      let validBlockHash = SHA256(JSON.stringify(block)).toString();
-      // Compare
-      if (blockHash===validBlockHash) {
-          return true;
-        } else {
-          console.log('Block #'+blockHeight+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
-          return false;
-        }
+      this.chain(blockHeight)
+      .then((value)=>{
+        // get block hash
+        let block = JSON.parse(value);
+        let blockHash = block.hash;
+        // remove block hash to test block integrity
+        block.hash = '';
+        // generate block hash
+        let validBlockHash = SHA256(JSON.stringify(block)).toString();
+        // Compare
+        if (blockHash===validBlockHash) {
+          console.log(true);
+          } else {
+            console.log('Block #'+blockHeight+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
+            console.log(false);
+          }
+      })
+      .catch((err)=>{
+        if (err) return console.log('Not found!', err);
+      });
     }
 
    // Validate blockchain
