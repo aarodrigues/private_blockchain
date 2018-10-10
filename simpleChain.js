@@ -125,57 +125,51 @@
     // Validate blockchain
       validateChain(){
         let errorLog = [];
+        let promises = [];
         this.getBlockHeight()
         .then((height)=>{
-            return height;
-        })
-        .then((height)=>{
+
           for (var i = 0; i < height; i++) {
             
-            this.validateBlock(i).then((valid)=>{
-              return valid;
-            })
-            .then((valid)=>{
-              console.log("heuheuheu: "+i);
-              console.log("coisinho: "+valid);
-              if (!valid) errorLog.push(i);
-
-              this.getBlock(i)
-              .then((value)=>{
-                let block = JSON.parse(value);
-                // compare blocks hash link
-                let blockHash = block.hash;
-                console.log("hash: "+blockHash);
-                return blockHash;
-              }).catch((err)=>{
-                if (err) return console.log('first Not found!', err);
-              })
-              .then((blockHash)=>{
-               // if(i<height-1){
-                 console.log("Indice: "+i);
-                  this.getBlock(i+1)
-                  .then((value)=>{
-                    let prev_block = value;
-                    let previousHash = prev_block.previousBlockHash;
-                    if (blockHash!==previousHash) {
-                      errorLog.push(i);
-                    }
-                  }).catch((err)=>{
-                    if (err) return console.log('Second Not found!', err);
-                  });
-               // }
-               
-              });
-            });
+            promises.push(this.getBlock(i)
+            .then((value)=>{
+              return JSON.parse(value); 
+            }).catch((err)=>{
+              if (err) return console.log('first Not found!', err);
+            }));
+            
           }
-        });
+          console.log("tamnaho: "+promises.length);
+          Promise.all(promises)
+          .then((array)=>{
+            console.log("hash: "+array);
+            for(i = 0; i<array.length; i++){
+              console.log("hash: "+array[i].hash);
 
-        if (errorLog.length>0) {
-          console.log('Block errors = ' + errorLog.length);
-          console.log('Blocks: '+errorLog);
-        } else {
-          console.log('No errors detected');
-        }
+              this.validateBlock(array[i].height).then((valid)=>{
+                if (!valid) errorLog.push(i);
+
+                let blockHash = array[i].hash;
+                let previousHash = array[i+1].previousBlockHash;
+                if (blockHash!==previousHash) {
+                  errorLog.push(i);
+                }
+                console.log(valid);
+              });
+            }
+            if (errorLog.length>0) {
+              console.log('Block errors = ' + errorLog.length);
+              console.log('Blocks: '+errorLog);
+            } else {
+              console.log('No errors detected');
+            }
+          }).catch((err)=>{
+            console.log("Error: "+err);
+          });
+
+        }).catch((err)=>{
+          console.log(err);
+        });
 
       }
   }
