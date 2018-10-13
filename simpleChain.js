@@ -73,7 +73,6 @@
         return new Promise((resolve, reject) => {
           levelSandbox.lastRegister()
           .on('data', function(data) {
-              console.log('Height: ' + JSON.parse(data.value).height);
               resolve(JSON.parse(data.value).height);
           }).on('error', function(err) {
               reject(err);
@@ -83,22 +82,23 @@
       }
 
       // get block
-      getBlock(blockHeight){
-        return this.chain(blockHeight);
-        // .then((value)=>{
-        //   console.log(JSON.parse(value));
-        // })
-        // .catch((err)=>{
-        //   if (err) return console.log('Not found!', err);
-        // });
+      getBlock(blockHeight,print){
+        if(print){
+         this.chain(blockHeight)
+         .then((value)=>{
+           console.log(JSON.parse(value));
+         });
+        }else{
+          return this.chain(blockHeight);
+        }
       }
-
 
       // validate block
       validateBlock(blockHeight){
         return new Promise((resolve, reject) => {
+          let print = false; 
           // get block object
-          this.getBlock(blockHeight)
+          this.getBlock(blockHeight,print)
           .then((value)=>{
             let block = JSON.parse(value);
             // get block hash
@@ -109,7 +109,6 @@
             let validBlockHash = SHA256(JSON.stringify(block)).toString();
               // Compare
             if (blockHash===validBlockHash) {
-              console.log(true);
               resolve(true);
             }else{
               console.log('Block #'+blockHeight+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
@@ -128,8 +127,7 @@
         let promises = [];
         this.getBlockHeight()
         .then((height)=>{
-
-          for (var i = 0; i < height; i++) {
+          for (var i = 0; i <= height; i++) {
             
             promises.push(this.getBlock(i)
             .then((value)=>{
@@ -137,26 +135,22 @@
             }).catch((err)=>{
               if (err) return console.log('first Not found!', err);
             }));
-            
           }
-          console.log("tamnaho: "+promises.length);
+          // Interacting through all promises
           Promise.all(promises)
           .then((array)=>{
-            console.log("hash: "+array);
-            for(i = 0; i<array.length; i++){
-              console.log("hash: "+array[i].hash);
+            for(i = 0; i<array.length-1; i++){
 
               this.validateBlock(array[i].height).then((valid)=>{
                 if (!valid) errorLog.push(i);
-
-                let blockHash = array[i].hash;
-                let previousHash = array[i+1].previousBlockHash;
-                if (blockHash!==previousHash) {
-                  errorLog.push(i);
-                }
-                console.log(valid);
               });
+               let blockHash = array[i].hash;
+               let previousHash = array[i+1].previousBlockHash;
+               if (blockHash!==previousHash) {
+                 errorLog.push(i);
+               }
             }
+
             if (errorLog.length>0) {
               console.log('Block errors = ' + errorLog.length);
               console.log('Blocks: '+errorLog);
@@ -170,7 +164,6 @@
         }).catch((err)=>{
           console.log(err);
         });
-
       }
   }
 
