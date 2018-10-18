@@ -40,45 +40,39 @@
     addBlock(newBlock){
       // UTC timestamp
       newBlock.time = new Date().getTime().toString().slice(0,-3);
-      //get last Register from db
-      levelSandbox.lastRegister()
-        .on('data', function(data) {
+      if(newBlock.height==0){
+        // Block hash with SHA256 using newBlock and converting to a string
+        newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
+        // Save in leveldb
+        levelSandbox.addDataToLevelDB(JSON.stringify(newBlock));
+      }else if(newBlock.height>0){
+          //get last Register from db
+        levelSandbox.lastRegister()
+        .then((data) =>{
           // Block height
           newBlock.height =  JSON.parse(data.value).height+1;
-        }).on('error', function(err) {
-            return console.log('Unable to read data stream!', err);
-        }).on('close', function() {
             
-            if(newBlock.height>0){  
-              //async fucntion to get previous block  
-              levelSandbox.getLevelDBData(newBlock.height-1).then((value)=>{
-                // previous block hash
-                newBlock.previousBlockHash = JSON.parse(value).hash;
-                // Block hash with SHA256 using newBlock and converting to a string
-                newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
-                // Save in leveldb
-                levelSandbox.addDataToLevelDB(JSON.stringify(newBlock));
-              });     
-            }else{
-              // Block hash with SHA256 using newBlock and converting to a string
-              newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
-              // Save in leveldb
-              levelSandbox.addDataToLevelDB(JSON.stringify(newBlock));
-            }
+          //async fucntion to get previous block  
+          levelSandbox.getLevelDBData(newBlock.height-1).then((value)=>{
+            // previous block hash
+            newBlock.previousBlockHash = JSON.parse(value).hash;
+            // Block hash with SHA256 using newBlock and converting to a string
+            newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
+            // Save in leveldb
+            levelSandbox.addDataToLevelDB(JSON.stringify(newBlock));
+          });     
+            
+        }).catch((err)=>{
+           console.log(err);
         });
+      }
+      
     }
 
     // Get block height
       getBlockHeight(){
-        return new Promise((resolve, reject) => {
-          levelSandbox.lastRegister()
-          .on('data', function(data) {
-              resolve(JSON.parse(data.value).height);
-          }).on('error', function(err) {
-              reject(err);
-              return console.log('Unable to read data stream!', err); 
-          });
-        });
+        return levelSandbox.lastRegister()
+        .then((data)=>{return JSON.parse(data).height});
       }
 
       // get block
@@ -168,3 +162,7 @@
   }
 
 
+  function get(h){
+    blockchain.getBlock(h)
+    .then((value)=>{console.log(value)});
+  }

@@ -56,18 +56,17 @@ function getAllData() {
 
 function lastRegister(){
   let count = 0;
-  return db.createReadStream({
-    reverse: true,
-    limit: 1
+   return new Promise((resolve, reject) => {
+     db.createReadStream()
+    .on('data', function(data) {
+      count++;
+    }).on('error', function(err) {
+        return console.log('Unable to read data stream!', err)
+    }).on('end', function () {
+      console.log("number registers: "+count)
+      resolve(getLevelDBData(count-1));
+    });
   });
-  // .on('data', function(data) {
-      
-  //     let block = JSON.parse(data.value);
-  //     count = block.height;
-  //     console.log('Height: ' + count);
-  //   }).on('error', function(err) {
-  //       return console.log('Unable to read data stream!', err)
-  //   });
 }
 
 /* ===== Testing ==============================================================|
