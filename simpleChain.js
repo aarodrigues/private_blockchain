@@ -40,51 +40,48 @@
     addBlock(newBlock){
       // UTC timestamp
       newBlock.time = new Date().getTime().toString().slice(0,-3);
-      if(newBlock.height==0){
-        // Block hash with SHA256 using newBlock and converting to a string
-        newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
-        // Save in leveldb
-        levelSandbox.addDataToLevelDB(JSON.stringify(newBlock));
-      }else if(newBlock.height>0){
-          //get last Register from db
-        levelSandbox.lastRegister()
-        .then((data) =>{
+
+          //get blockchain height
+          this.getBlockHeight()
+          .then((height) =>{
           // Block height
-          newBlock.height =  JSON.parse(data.value).height+1;
+          newBlock.height =  height + 1;
             
-          //async fucntion to get previous block  
-          levelSandbox.getLevelDBData(newBlock.height-1).then((value)=>{
-            // previous block hash
-            newBlock.previousBlockHash = JSON.parse(value).hash;
+          if(newBlock.height>0){
+            //async fucntion to get previous block  
+            levelSandbox.getLevelDBData(newBlock.height-1).then((value)=>{
+              // previous block hash
+              newBlock.previousBlockHash = JSON.parse(value).hash;
+              // Block hash with SHA256 using newBlock and converting to a string
+              newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
+              // Save in leveldb
+              levelSandbox.addDataToLevelDB(JSON.stringify(newBlock));
+            });  
+          }else{
             // Block hash with SHA256 using newBlock and converting to a string
             newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
             // Save in leveldb
             levelSandbox.addDataToLevelDB(JSON.stringify(newBlock));
-          });     
+          }
             
         }).catch((err)=>{
            console.log(err);
-        });
-      }
-      
+         });
     }
 
     // Get block height
       getBlockHeight(){
         return levelSandbox.lastRegister()
-        .then((data)=>{return JSON.parse(data).height});
+        .then((data)=>{return JSON.parse(data).height})
+        .catch((err)=>{
+          console.log(err);
+          return -1;
+        });
       }
 
       // get block
-      getBlock(blockHeight,print){
-        if(print){
-         this.chain(blockHeight)
-         .then((value)=>{
-           console.log(JSON.parse(value));
-         });
-        }else{
-          return this.chain(blockHeight);
-        }
+      getBlock(blockHeight){
+        return this.chain(blockHeight);
       }
 
       // validate block
@@ -92,7 +89,7 @@
         return new Promise((resolve, reject) => {
           let print = false; 
           // get block object
-          this.getBlock(blockHeight,print)
+          this.getBlock(blockHeight)
           .then((value)=>{
             let block = JSON.parse(value);
             // get block hash
@@ -159,10 +156,4 @@
           console.log(err);
         });
       }
-  }
-
-
-  function get(h){
-    blockchain.getBlock(h)
-    .then((value)=>{console.log(value)});
   }
